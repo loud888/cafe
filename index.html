@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Quán Cà Phê</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #333; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin: 5px 0; }
+        button, input { margin: 5px; padding: 5px; }
+        .tab { overflow: hidden; border: 1px solid #ccc; background-color: #f1f1f1; }
+        .tab button { background-color: inherit; border: none; outline: none; cursor: pointer; padding: 14px 16px; }
+        .tab button:hover { background-color: #ddd; }
+        .tabcontent { display: none; padding: 20px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Quản lý Quán Cà Phê</h1>
+    <div class="tab">
+        <button onclick="openTab(event, 'home')">Trang chủ</button>
+        <button onclick="openTab(event, 'view')">Xem</button>
+        <button onclick="openTab(event, 'search')">Tìm kiếm</button>
+        <button onclick="openTab(event, 'add')">Thêm</button>
+        <button onclick="openTab(event, 'update')">Cập nhật</button>
+        <button onclick="openTab(event, 'delete')">Xóa</button>
+    </div>
+
+    <div id="home" class="tabcontent">
+        <h2>Danh sách Khách hàng</h2>
+        <ul id="khachHangList"></ul>
+    </div>
+
+    <div id="view" class="tabcontent">
+        <h2>Xem Dữ liệu</h2>
+        <button onclick="viewBan()">Xem Bàn</button>
+        <button onclick="viewOrder()">Xem Đơn hàng</button>
+        <button onclick="viewMon()">Xem Món</button>
+        <button onclick="viewNhanVien()">Xem Nhân viên</button>
+        <ul id="viewResult"></ul>
+    </div>
+
+    <div id="search" class="tabcontent">
+        <h2>Tìm kiếm</h2>
+        <form onsubmit="searchKhachHang(event)">
+            <input type="text" id="searchKhachHang" placeholder="Mã khách hàng" required>
+            <button type="submit">Tìm</button>
+        </form>
+        <button onclick="searchBanDangSuDung()">Xem Bàn Đang Sử dụng</button>
+        <form onsubmit="searchOrder(event)">
+            <input type="text" id="searchOrderKh" placeholder="Mã khách hàng" required>
+            <button type="submit">Tìm Đơn hàng</button>
+        </form>
+        <button onclick="searchMonGiaCao()">Xem Món Giá > 30,000</button>
+        <button onclick="searchQuanLy()">Xem Quản lý</button>
+        <ul id="searchResult"></ul>
+    </div>
+
+    <div id="add" class="tabcontent">
+        <h2>Thêm Dữ liệu</h2>
+        <form onsubmit="addKhachHang(event)">
+            <input type="text" id="addKhMa" placeholder="Mã KH" required>
+            <input type="text" id="addKhTen" placeholder="Tên" required>
+            <input type="text" id="addKhSDT" placeholder="SĐT" required>
+            <button type="submit">Thêm Khách hàng</button>
+        </form>
+        <form onsubmit="addBan(event)">
+            <input type="text" id="addBanMa" placeholder="Mã bàn" required>
+            <input type="text" id="addBanTrangThai" placeholder="Trạng thái" required>
+            <button type="submit">Thêm Bàn</button>
+        </form>
+        <form onsubmit="addMon(event)">
+            <input type="text" id="addMonMa" placeholder="Mã món" required>
+            <input type="text" id="addMonTen" placeholder="Tên món" required>
+            <input type="number" id="addMonGia" placeholder="Giá" required>
+            <button type="submit">Thêm Món</button>
+        </form>
+        <form onsubmit="addOrder(event)">
+            <input type="text" id="addOrderMa" placeholder="Mã đơn hàng" required>
+            <input type="text" id="addOrderKh" placeholder="Mã KH" required>
+            <input type="text" id="addOrderBan" placeholder="Mã bàn" required>
+            <input type="text" id="addOrderTrangThai" placeholder="Trạng thái" required>
+            <input type="datetime-local" id="addOrderThoiGian" required>
+            <input type="text" id="addOrderNV" placeholder="Mã NV">
+            <button type="submit">Thêm Đơn hàng</button>
+        </form>
+        <p id="addResult"></p>
+    </div>
+
+    <div id="update" class="tabcontent">
+        <h2>Cập nhật Dữ liệu</h2>
+        <form onsubmit="updateBan(event)">
+            <input type="text" id="updateBanMa" placeholder="Mã bàn" required>
+            <input type="text" id="updateBanTrangThai" placeholder="Trạng thái mới" required>
+            <button type="submit">Cập nhật</button>
+        </form>
+        <form onsubmit="updateOrder(event)">
+            <input type="text" id="updateOrderMa" placeholder="Mã đơn hàng" required>
+            <input type="text" id="updateOrderTrangThai" placeholder="Trạng thái mới" required>
+            <button type="submit">Cập nhật</button>
+        </form>
+        <form onsubmit="updateMon(event)">
+            <input type="text" id="updateMonMa" placeholder="Mã món" required>
+            <input type="number" id="updateMonGia" placeholder="Giá mới" required>
+            <button type="submit">Cập nhật</button>
+        </form>
+        <p id="updateResult"></p>
+    </div>
+
+    <div id="delete" class="tabcontent">
+        <h2>Xóa Dữ liệu</h2>
+        <form onsubmit="deleteKhachHang(event)">
+            <input type="text" id="deleteKhMa" placeholder="Mã khách hàng" required>
+            <button type="submit">Xóa</button>
+        </form>
+        <form onsubmit="deleteOrder(event)">
+            <input type="text" id="deleteOrderMa" placeholder="Mã đơn hàng" required>
+            <button type="submit">Xóa</button>
+        </form>
+        <p id="deleteResult"></p>
+    </div>
+
+    <script>
+        const apiKey = "YOUR_API_KEY"; // Thay bằng API Key từ Atlas
+        const endpoint = "https://data.mongodb-api.com/app/your-app-id/endpoint/data/v1"; // Thay bằng Endpoint từ Atlas
+
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab")[0].getElementsByTagName("button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        document.getElementsByClassName("tab")[0].getElementsByTagName("button")[0].click();
+
+        async function fetchData(url, method, body = null) {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "api-key": apiKey
+                },
+                body: body ? JSON.stringify(body) : null
+            });
+            return await response.json();
+        }
+
+        // Trang chủ - Xem tất cả khách hàng (Truy vấn 1)
+        async function loadKhachHang() {
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "khach_hang",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": {}
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("khachHangList");
+            list.innerHTML = result.documents.map(kh => `<li>${kh.Ten} (Mã: ${kh.Ma_KH}) - SĐT: ${kh.SDT}</li>`).join("");
+        }
+        loadKhachHang();
+
+        // Xem bàn (Truy vấn 2)
+        async function viewBan() {
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "ban",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": {}
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("viewResult");
+            list.innerHTML = result.documents.map(b => `<li>Bàn ${b.Ma_ban} - Trạng thái: ${b.Trang_thai}</li>`).join("");
+        }
+
+        // Xem đơn hàng (Truy vấn 3)
+        async function viewOrder() {
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "order",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": {}
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("viewResult");
+            list.innerHTML = result.documents.map(o => `<li>Đơn ${o.Ma_order} - KH: ${o.Ma_KH} - Bàn: ${o.Ma_ban}</li>`).join("");
+        }
+
+        // Xem món (Truy vấn 4)
+        async function viewMon() {
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "mon",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": {}
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("viewResult");
+            list.innerHTML = result.documents.map(m => `<li>${m.Ten_mon} (Mã: ${m.Ma_mon}) - Giá: ${m.Gia}</li>`).join("");
+        }
+
+        // Xem nhân viên (Truy vấn 5)
+        async function viewNhanVien() {
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "nhan_vien",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": {}
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("viewResult");
+            list.innerHTML = result.documents.map(nv => `<li>${nv.Ten} (Mã: ${nv.Ma_NV}) - SĐT: ${nv.SDT}</li>`).join("");
+        }
+
+        // Tìm khách hàng theo mã (Truy vấn 6)
+        async function searchKhachHang(event) {
+            event.preventDefault();
+            const maKH = document.getElementById("searchKhachHang").value;
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "khach_hang",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": { "Ma_KH": maKH }
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("searchResult");
+            list.innerHTML = result.documents.map(kh => `<li>${kh.Ten} (Mã: ${kh.Ma_KH}) - SĐT: ${kh.SDT}</li>`).join("") || "<li>Không tìm thấy</li>";
+        }
+
+        // Tìm bàn đang sử dụng (Truy vấn 7)
+        async function searchBanDangSuDung() {
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "ban",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": { "Trang_thai": "Dang su dung" }
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("searchResult");
+            list.innerHTML = result.documents.map(b => `<li>Bàn ${b.Ma_ban} - Trạng thái: ${b.Trang_thai}</li>`).join("") || "<li>Không có bàn nào</li>";
+        }
+
+        // Tìm đơn hàng theo khách hàng (Truy vấn 8)
+        async function searchOrder(event) {
+            event.preventDefault();
+            const maKH = document.getElementById("searchOrderKh").value;
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "order",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": { "Ma_KH": maKH }
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("searchResult");
+            list.innerHTML = result.documents.map(o => `<li>Đơn ${o.Ma_order} - KH: ${o.Ma_KH} - Bàn: ${o.Ma_ban}</li>`).join("") || "<li>Không tìm thấy</li>";
+        }
+
+        // Tìm món giá > 30,000 (Truy vấn 9)
+        async function searchMonGiaCao() {
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "mon",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": { "Gia": { $gt: 30000 } }
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("searchResult");
+            list.innerHTML = result.documents.map(m => `<li>${m.Ten_mon} (Mã: ${m.Ma_mon}) - Giá: ${m.Gia}</li>`).join("") || "<li>Không có món nào</li>";
+        }
+
+        // Tìm quản lý (Truy vấn 10)
+        async function searchQuanLy() {
+            const url = `${endpoint}/action/find`;
+            const body = {
+                "collection": "quan_ly",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": {}
+            };
+            const result = await fetchData(url, "POST", body);
+            const list = document.getElementById("searchResult");
+            list.innerHTML = result.documents.map(ql => `<li>Quản lý ${ql.Ma_NV} - Cấp bậc: ${ql.CapBac}</li>`).join("") || "<li>Không có quản lý</li>";
+        }
+
+        // Thêm khách hàng (Truy vấn 11)
+        async function addKhachHang(event) {
+            event.preventDefault();
+            const maKH = document.getElementById("addKhMa").value;
+            const ten = document.getElementById("addKhTen").value;
+            const sdt = document.getElementById("addKhSDT").value;
+            const url = `${endpoint}/action/insertOne`;
+            const body = {
+                "collection": "khach_hang",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "document": { "Ma_KH": maKH, "Ten": ten, "SDT": sdt }
+            };
+            await fetchData(url, "POST", body);
+            document.getElementById("addResult").innerHTML = "Thêm khách hàng thành công!";
+            loadKhachHang();
+        }
+
+        // Thêm bàn (Truy vấn 12)
+        async function addBan(event) {
+            event.preventDefault();
+            const maBan = document.getElementById("addBanMa").value;
+            const trangThai = document.getElementById("addBanTrangThai").value;
+            const url = `${endpoint}/action/insertOne`;
+            const body = {
+                "collection": "ban",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "document": { "Ma_ban": maBan, "Trang_thai": trangThai }
+            };
+            await fetchData(url, "POST", body);
+            document.getElementById("addResult").innerHTML = "Thêm bàn thành công!";
+        }
+
+        // Thêm món (Truy vấn 13)
+        async function addMon(event) {
+            event.preventDefault();
+            const maMon = document.getElementById("addMonMa").value;
+            const tenMon = document.getElementById("addMonTen").value;
+            const gia = document.getElementById("addMonGia").value;
+            const url = `${endpoint}/action/insertOne`;
+            const body = {
+                "collection": "mon",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "document": { "Ma_mon": maMon, "Ten_mon": tenMon, "Gia": parseInt(gia) }
+            };
+            await fetchData(url, "POST", body);
+            document.getElementById("addResult").innerHTML = "Thêm món thành công!";
+        }
+
+        // Thêm đơn hàng (Truy vấn 14)
+        async function addOrder(event) {
+            event.preventDefault();
+            const maOrder = document.getElementById("addOrderMa").value;
+            const maKH = document.getElementById("addOrderKh").value;
+            const maBan = document.getElementById("addOrderBan").value;
+            const trangThai = document.getElementById("addOrderTrangThai").value;
+            const thoiGian = document.getElementById("addOrderThoiGian").value;
+            const maNV = document.getElementById("addOrderNV").value || null;
+            const url = `${endpoint}/action/insertOne`;
+            const body = {
+                "collection": "order",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "document": { "Ma_order": maOrder, "Ma_KH": maKH, "Ma_ban": maBan, "Trang_thai": trangThai, "Thoi_gian": thoiGian, "Ma_NV": maNV }
+            };
+            await fetchData(url, "POST", body);
+            document.getElementById("addResult").innerHTML = "Thêm đơn hàng thành công!";
+        }
+
+        // Cập nhật trạng thái bàn (Truy vấn 16)
+        async function updateBan(event) {
+            event.preventDefault();
+            const maBan = document.getElementById("updateBanMa").value;
+            const trangThai = document.getElementById("updateBanTrangThai").value;
+            const url = `${endpoint}/action/updateOne`;
+            const body = {
+                "collection": "ban",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": { "Ma_ban": maBan },
+                "update": { "$set": { "Trang_thai": trangThai } }
+            };
+            await fetchData(url, "POST", body);
+            document.getElementById("updateResult").innerHTML = "Cập nhật thành công!";
+        }
+
+        // Cập nhật trạng thái đơn hàng (Truy vấn 17)
+        async function updateOrder(event) {
+            event.preventDefault();
+            const maOrder = document.getElementById("updateOrderMa").value;
+            const trangThai = document.getElementById("updateOrderTrangThai").value;
+            const url = `${endpoint}/action/updateOne`;
+            const body = {
+                "collection": "order",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": { "Ma_order": maOrder },
+                "update": { "$set": { "Trang_thai": trangThai } }
+            };
+            await fetchData(url, "POST", body);
+            document.getElementById("updateResult").innerHTML = "Cập nhật thành công!";
+        }
+
+        // Cập nhật giá món (Truy vấn 18)
+        async function updateMon(event) {
+            event.preventDefault();
+            const maMon = document.getElementById("updateMonMa").value;
+            const gia = document.getElementById("updateMonGia").value;
+            const url = `${endpoint}/action/updateOne`;
+            const body = {
+                "collection": "mon",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": { "Ma_mon": maMon },
+                "update": { "$set": { "Gia": parseInt(gia) } }
+            };
+            await fetchData(url, "POST", body);
+            document.getElementById("updateResult").innerHTML = "Cập nhật thành công!";
+        }
+
+        // Xóa khách hàng (Truy vấn 19)
+        async function deleteKhachHang(event) {
+            event.preventDefault();
+            const maKH = document.getElementById("deleteKhMa").value;
+            const url = `${endpoint}/action/deleteOne`;
+            const body = {
+                "collection": "khach_hang",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": { "Ma_KH": maKH }
+            };
+            await fetchData(url, "POST", body);
+            document.getElementById("deleteResult").innerHTML = "Xóa thành công!";
+            loadKhachHang();
+        }
+
+        // Xóa đơn hàng (Truy vấn 20)
+        async function deleteOrder(event) {
+            event.preventDefault();
+            const maOrder = document.getElementById("deleteOrderMa").value;
+            const url = `${endpoint}/action/deleteOne`;
+            const body = {
+                "collection": "order",
+                "database": "cafe_db",
+                "dataSource": "Cluster0",
+                "filter": { "Ma_order": maOrder }
+            };
+            await fetchData(url, "POST", body);
+            document.getElementById("deleteResult").innerHTML = "Xóa thành công!";
+        }
+    </script>
+</body>
+</html>
